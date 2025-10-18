@@ -1,2 +1,2 @@
-# MO_Re
-Remaster of the BS 
+# Mental Outback: R
+Remaster of the BS initially made more than a year ago lmaooo
