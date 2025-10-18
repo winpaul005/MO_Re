@@ -8,7 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "C_Gamemode.h"
 #include "Blueprint/UserWidget.h"
-#include "C_Entity.h"
+#include "CI_Player.h"
 #include "C_GaymState.h"
 #include "C_InventoryComponent.h"
 #include <Camera/CameraComponent.h>
@@ -22,7 +22,7 @@
 
 
 UCLASS()
-class MO_RE_API AC_PlayerCharacter : public ACharacter, public IC_Entity
+class MO_RE_API AC_PlayerCharacter : public ACharacter, public ICI_Player
 {
 	GENERATED_BODY()
 
@@ -69,8 +69,12 @@ public:
 	TSubclassOf<UUserWidget> Player_Widget_Class;
 	virtual int GetHealth_Implementation() override;
 	virtual void Punch_Implementation(int hitPoints) override;
+	virtual AActor* GetLookedAtItem_Implementation() override;
 	UFUNCTION(BlueprintCallable)
 	bool GetInventoryOpen();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	AActor* lookedAtActor;
+
 
 
 	
@@ -90,6 +94,7 @@ protected:
 	void Quit();
 	void Shoot();
 	void Pause();
+	void LookAt();
 	void Grab();
 	void AttemptToJump();
 	FHitResult crouchHit;
@@ -99,7 +104,6 @@ protected:
 	bool bIsReading;
 	bool bIsInventoryOpen;
 	bool bPaused;
-	
 	int currentHealth;
 	int maxHealth = 40;
 

@@ -57,12 +57,15 @@ public:
 	void RemoveItem(int x, int y);
 	UFUNCTION(BlueprintCallable)
 	TArray<FInventoryItem> GetInventoryArray();
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+
+	TArray<FInventoryItem> InventoryArray;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	TArray<FInventoryItem> InventoryArray;
-	int tableW;
-	int tableH;
+	int tableW = 3;
+	int tableH = 3;
 
 public:	
 	// Called every frame

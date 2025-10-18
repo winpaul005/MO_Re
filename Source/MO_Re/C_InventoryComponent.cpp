@@ -22,6 +22,8 @@ void UC_InventoryComponent::AddItem(FInventoryItem item)
 	else
 	{
 		InventoryArray.Add(item);
+		InventoryArray[InventoryArray.Num() - 1].rowIndex = (InventoryArray.Num() - 1 / 3);
+		InventoryArray[InventoryArray.Num() - 1].colIndex = (InventoryArray.Num() - 1 % 3);
 	}
 }
 

@@ -22,4 +22,12 @@ class MO_RE_API ICI_Player
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	int GetHealth();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void Punch(int hitPoints);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void Speak(const FText& speech, float speechDuration);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	AActor* GetLookedAtItem();
 };

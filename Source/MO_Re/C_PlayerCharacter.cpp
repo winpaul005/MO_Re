@@ -2,6 +2,7 @@
 #include "C_PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "C_UseableItem.h"
 
 // Sets default values
 AC_PlayerCharacter::AC_PlayerCharacter()
@@ -37,6 +38,13 @@ void AC_PlayerCharacter::Punch_Implementation(int hitPoints)
 		bOutOfOrder = true;
 	}
 }
+
+AActor* AC_PlayerCharacter::GetLookedAtItem_Implementation()
+{
+	return lookedAtActor;
+}
+
+
 
 bool AC_PlayerCharacter::GetInventoryOpen()
 {
@@ -91,6 +99,30 @@ void AC_PlayerCharacter::Flashlight()
 void AC_PlayerCharacter::Pause()
 {
 	GM_Instance->PauseGame();
+}
+void AC_PlayerCharacter::LookAt()
+{
+	FHitResult OutHit;
+	FVector StartLine = MainCamera->GetComponentLocation();
+	FVector ForwardLine = MainCamera->GetForwardVector();
+	FVector End = ((ForwardLine * 244.0f) + StartLine);
+	FCollisionQueryParams CollisionParams;
+	//DrawDebugLine(GetWorld(), StartLine, End, FColor::Green, false, 1, 0, 1);
+	if (GetWorld()->LineTraceSingleByChannel(OutHit, StartLine, End, ECC_Visibility, CollisionParams))
+	{
+		if (IsValid(OutHit.GetActor()) && OutHit.GetActor()->Implements<UC_UseableItem>())
+		{
+			lookedAtActor = OutHit.GetActor();
+		}
+		else
+		{
+			lookedAtActor = nullptr;
+		}
+	}
+	else
+	{
+		lookedAtActor = nullptr;
+	}
 }
 void AC_PlayerCharacter::Inventory()
 {
@@ -178,7 +210,7 @@ void AC_PlayerCharacter::Look(const FInputActionValue& Value)
 void AC_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	LookAt();
 }
 
 // Called to bind functionality to input

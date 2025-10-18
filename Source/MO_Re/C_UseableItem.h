@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "C_InventoryComponent.h"
 #include "C_UseableItem.generated.h"
 
 // This class does not need to be modified.
@@ -22,4 +23,6 @@ class MO_RE_API IC_UseableItem
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void UseItem(int CacheItemID, UC_InventoryComponent* InventoryC);
 };

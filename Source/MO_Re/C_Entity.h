@@ -23,8 +23,9 @@ class MO_RE_API IC_Entity
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
-	int GetHealth();
+	int GetEntityHealth();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
-	void Punch(int hitPoints);
+	void PunchEntity(int hitPoints);
+
 
 };
