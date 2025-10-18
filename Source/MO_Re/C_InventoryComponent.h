@@ -19,9 +19,9 @@ struct FInventoryItem : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UTexture2D* ItemImage;
-	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	int rowIndex;
-	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	int colIndex;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -64,8 +64,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	int tableW = 3;
-	int tableH = 3;
+	int maxItems = 9;
 
 public:	
 	// Called every frame
