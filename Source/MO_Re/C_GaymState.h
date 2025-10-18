@@ -8,6 +8,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "C_GaymState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryStateSwitched, bool, bSwitchState);
 /**
  * 
  */
@@ -17,8 +18,19 @@ class MO_RE_API AC_GaymState : public AGameStateBase
 	GENERATED_BODY()
 	AC_GaymState();
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnInventoryStateSwitched SwitchDelegate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	FInventoryItem cacheItem;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	FGun equippedGun;
+	UFUNCTION(BlueprintCallable)
+	void SetInventoryOpen(bool bIsOpen);
+	UFUNCTION(BlueprintCallable)
+	void SwitchInventoryOpen();
+	UFUNCTION(BlueprintCallable)
+	bool GetInventoryOpen();
+protected:
+	bool bIsInventoryOpen;
+	bool bIsPaused;
 };

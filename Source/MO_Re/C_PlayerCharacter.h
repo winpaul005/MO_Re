@@ -7,6 +7,8 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "C_Gamemode.h"
+#include "Blueprint/UserWidget.h"
+#include "C_Entity.h"
 #include "C_GaymState.h"
 #include "C_InventoryComponent.h"
 #include <Camera/CameraComponent.h>
@@ -19,9 +21,8 @@
 
 
 
-
 UCLASS()
-class MO_RE_API AC_PlayerCharacter : public ACharacter
+class MO_RE_API AC_PlayerCharacter : public ACharacter, public IC_Entity
 {
 	GENERATED_BODY()
 
@@ -59,15 +60,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* ShootAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* ScrollUpAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* ScrollDownAction;
+	UInputAction* InventoryAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* UseAction;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UUserWidget* Player_Widget;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> Player_Widget_Class;
+	virtual int GetHealth_Implementation() override;
+	virtual void Punch_Implementation(int hitPoints) override;
+	UFUNCTION(BlueprintCallable)
+	bool GetInventoryOpen();
+
+
 	
 
 
@@ -81,10 +86,12 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Discard();
+	void Inventory();
 	void Quit();
 	void Shoot();
 	void Pause();
 	void Grab();
+	void AttemptToJump();
 	FHitResult crouchHit;
 	FCollisionObjectQueryParams crouchParams;
 	FCollisionQueryParams crouchCollisionParams;
@@ -92,6 +99,9 @@ protected:
 	bool bIsReading;
 	bool bIsInventoryOpen;
 	bool bPaused;
+	
+	int currentHealth;
+	int maxHealth = 40;
 
 public:	
 	// Called every frame

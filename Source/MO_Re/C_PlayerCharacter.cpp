@@ -19,14 +19,47 @@ AC_PlayerCharacter::AC_PlayerCharacter()
 	crouchParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	crouchCollisionParams.AddIgnoredActor(this);
 	InventoryComponent = CreateDefaultSubobject<UC_InventoryComponent>(TEXT("Inventory"));
+	currentHealth = maxHealth;
+
+}
 
 
+int AC_PlayerCharacter::GetHealth_Implementation()
+{
+	return currentHealth;
+}
+
+void AC_PlayerCharacter::Punch_Implementation(int hitPoints)
+{
+	currentHealth -= hitPoints;
+	if (currentHealth <= 0)
+	{
+		bOutOfOrder = true;
+	}
+}
+
+bool AC_PlayerCharacter::GetInventoryOpen()
+{
+	return bIsInventoryOpen;
+}
+
+void AC_PlayerCharacter::AttemptToJump()
+{
+	if(bCanLook)
+
+	{
+		bPressedJump = true;
+		JumpKeyHoldTime = 0.0f;
+
+	}
 }
 
 // Called when the game starts or when spawned
 void AC_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
+
 	GM_Instance = Cast<AC_Gamemode>(GetWorld()->GetAuthGameMode());
 	GS_Instance = Cast<AC_GaymState>(GetWorld()->GetGameState());
 	//------------INPUT SETUP -------------------------------------------------------------
@@ -37,6 +70,11 @@ void AC_PlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	if (Player_Widget_Class != nullptr)
+	{
+		Player_Widget = CreateWidget(GetWorld(), Player_Widget_Class);
+		Player_Widget->AddToViewport();
+	}
 	//PlayerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AC_PlayerCharacter::OnBeginOverlap);
 	//PlayerCapsule->OnComponentEndOverlap.AddDynamic(this, &AC_PlayerCharacter::OnEndOverlap);
 	//-----------------------------------------------------------------------------------
@@ -46,10 +84,30 @@ void AC_PlayerCharacter::Use()
 {
 
 }
+void AC_PlayerCharacter::Flashlight()
+{
+	//
+}
 void AC_PlayerCharacter::Pause()
 {
 	GM_Instance->PauseGame();
-	
+}
+void AC_PlayerCharacter::Inventory()
+{
+	GS_Instance->SwitchInventoryOpen();
+	if (GS_Instance->GetInventoryOpen())
+	{
+		bCanLook = false;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameAndUI());
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+
+	}
+	else
+	{
+		bCanLook = true;
+		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
+		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+	}
 }
 void AC_PlayerCharacter::Quit()
 {
@@ -109,7 +167,7 @@ void AC_PlayerCharacter::Move(const FInputActionValue& Value)
 void AC_PlayerCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-	if (Controller != nullptr)
+	if (Controller != nullptr && bCanLook)
 	{
 		AddControllerYawInput(LookAxisVector.Y * FLookFactor);
 		AddControllerPitchInput(LookAxisVector.X * FLookFactor);
@@ -134,8 +192,9 @@ void AC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Look);
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Use);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Inventory);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::AttemptToJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AC_PlayerCharacter::AttemptToJump);
 
 
 	}

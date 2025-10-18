@@ -10,7 +10,7 @@ USTRUCT(BlueprintType)
 struct FInventoryItem : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY();
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
 	bool bIsItemValid;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FString ItemName;
@@ -19,9 +19,9 @@ struct FInventoryItem : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UTexture2D* ItemImage;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
 	int rowIndex;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
 	int colIndex;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -34,9 +34,9 @@ USTRUCT(BlueprintType)
 struct FGun : public FInventoryItem
 {
 	GENERATED_USTRUCT_BODY();
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	int MaxAmmo;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int MaxAmmo;
+	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
 	int currentAmmo;
 
 };
@@ -49,13 +49,13 @@ class MO_RE_API UC_InventoryComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UC_InventoryComponent();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void AddItem(FInventoryItem item);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void MoveItem(int x_old, int y_old, int x_new, int y_new);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void RemoveItem(int x, int y);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	TArray<FInventoryItem> GetInventoryArray();
 protected:
 	// Called when the game starts
