@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "C_InventoryComponent.h"
 #include "UObject/Interface.h"
 #include "CI_Player.generated.h"
 
@@ -30,4 +31,8 @@ public:
 	void Speak(const FText& speech, float speechDuration);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	AActor* GetLookedAtItem();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void SetHoveredItem(FInventoryItem inputItem);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	FInventoryItem GetHoveredItem();
 };

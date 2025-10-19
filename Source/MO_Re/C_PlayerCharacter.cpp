@@ -44,6 +44,16 @@ AActor* AC_PlayerCharacter::GetLookedAtItem_Implementation()
 	return lookedAtActor;
 }
 
+void AC_PlayerCharacter::SetHoveredItem_Implementation(FInventoryItem inputItem)
+{
+	hoveredItem = inputItem;
+}
+
+FInventoryItem AC_PlayerCharacter::GetHoveredItem_Implementation()
+{
+	return hoveredItem;
+}
+
 
 
 bool AC_PlayerCharacter::GetInventoryOpen()

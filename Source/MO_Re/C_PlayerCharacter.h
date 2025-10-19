@@ -70,6 +70,9 @@ public:
 	virtual int GetHealth_Implementation() override;
 	virtual void Punch_Implementation(int hitPoints) override;
 	virtual AActor* GetLookedAtItem_Implementation() override;
+	virtual void SetHoveredItem_Implementation(FInventoryItem inputItem) override;
+	virtual FInventoryItem GetHoveredItem_Implementation() override;
+
 	UFUNCTION(BlueprintCallable)
 	bool GetInventoryOpen();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -104,6 +107,7 @@ protected:
 	bool bIsReading;
 	bool bIsInventoryOpen;
 	bool bPaused;
+	FInventoryItem hoveredItem;
 	int currentHealth;
 	int maxHealth = 40;
 
