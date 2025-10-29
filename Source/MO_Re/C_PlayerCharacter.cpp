@@ -100,7 +100,8 @@ void AC_PlayerCharacter::BeginPlay()
 
 void AC_PlayerCharacter::Use()
 {
-
+	if(lookedAtActor != nullptr)
+	IC_UseableItem::Execute_UseItem(lookedAtActor, 0, nullptr);
 }
 void AC_PlayerCharacter::Flashlight()
 {
