@@ -8,7 +8,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "C_GaymState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryStateSwitched, bool, bSwitchState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryStateSwitched, bool, bSwitchState,int,CacheIID);
 /**
  * 
  */
@@ -23,7 +23,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryStateSwitched SwitchDelegate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
-	int cacheItemID;
+	int cacheItemID = -1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	UC_InventoryComponent* inventoryInstance;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")

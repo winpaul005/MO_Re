@@ -32,7 +32,7 @@ void AC_GaymState::SetInventoryOpen(bool bIsOpen)
 
 
 	}
-	SwitchDelegate.Broadcast(bIsInventoryOpen);
+	SwitchDelegate.Broadcast(bIsInventoryOpen, cacheItemID);
 }
 
 void AC_GaymState::SwitchInventoryOpen()
@@ -51,7 +51,7 @@ void AC_GaymState::SwitchInventoryOpen()
 
 
 	}
-	SwitchDelegate.Broadcast(bIsInventoryOpen);
+	SwitchDelegate.Broadcast(bIsInventoryOpen, cacheItemID);
 }
 
 bool AC_GaymState::GetInventoryOpen()
