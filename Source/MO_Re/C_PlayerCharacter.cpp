@@ -2,6 +2,7 @@
 #include "C_PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "C_UseableItem.h"
 #include "CI_Entity.h"
 
@@ -49,6 +50,7 @@ void AC_PlayerCharacter::Punch_Implementation(int hitPoints)
 	if (currentHealth <= 0)
 	{
 		bOutOfOrder = true;
+		Holster();
 	}
 }
 
@@ -107,7 +109,7 @@ void AC_PlayerCharacter::Special()
 void AC_PlayerCharacter::Holster()
 {
 	//I'm sick of wasting so much space of code soooooo I got insane
-	if(InventoryComponent->CurrentGun.bIsItemValid)
+	if(InventoryComponent->CurrentGun.bIsItemValid ||bOutOfOrder)
 	{
 		InventoryComponent->CurrentGun.bIsItemValid = false;
 		ViewportGunMesh->SetSkeletalMesh(nullptr);
@@ -115,9 +117,13 @@ void AC_PlayerCharacter::Holster()
 	}
 	else
 	{
-		InventoryComponent->CurrentGun.bIsItemValid = true;
-		ViewportGunMesh->SetSkeletalMesh(InventoryComponent->CurrentGun.ViewportMesh);
-		bIsUsingCrafts = false;
+		if(!bOutOfOrder)
+		{
+			InventoryComponent->CurrentGun.bIsItemValid = true;
+			ViewportGunMesh->SetSkeletalMesh(InventoryComponent->CurrentGun.ViewportMesh);
+			bIsUsingCrafts = false;
+		}
+
 	}
 	
 }
@@ -184,7 +190,7 @@ void AC_PlayerCharacter::Use()
 }
 void AC_PlayerCharacter::Flashlight()
 {
-	FlashlightLight->Intensity <= 0.0f ? FlashlightLight->SetIntensity(FlashlightMaxIntensity) : FlashlightLight->SetIntensity(0);
+	FlashlightLight->Intensity <= 0.0f&&!bOutOfOrder ? FlashlightLight->SetIntensity(FlashlightMaxIntensity) : FlashlightLight->SetIntensity(0);
 }
 void AC_PlayerCharacter::Pause()
 {
@@ -216,6 +222,8 @@ void AC_PlayerCharacter::LookAt()
 }
 void AC_PlayerCharacter::Inventory()
 {
+	if(!bOutOfOrder)
+	{
 	GS_Instance->SwitchInventoryOpen();
 	if (GS_Instance->GetInventoryOpen())
 	{
@@ -230,6 +238,8 @@ void AC_PlayerCharacter::Inventory()
 		GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 		GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 	}
+	}
+
 }
 void AC_PlayerCharacter::Quit()
 {
@@ -242,7 +252,7 @@ void AC_PlayerCharacter::Quit()
 }
 void AC_PlayerCharacter::Shoot()
 {
-	if (InventoryComponent->CurrentGun.bIsItemValid && GS_Instance->cacheItemID<0 && lookedAtActor == nullptr && bCanLook && !bIsUsingCrafts)
+	if (InventoryComponent->CurrentGun.bIsItemValid && GS_Instance->cacheItemID<0 && lookedAtActor == nullptr && bCanLook && !bIsUsingCrafts &&!bOutOfOrder)
 	{
 
 		if (InventoryComponent->CurrentGun.currentAmmo > 0)
@@ -264,6 +274,13 @@ void AC_PlayerCharacter::Shoot()
 			}
 			//Shooting logic (not 4 now m8)
 			InventoryComponent->CurrentGun.currentAmmo -= 1;
+		}
+	}
+	else
+	{
+		if(bOutOfOrder)
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), FName(GetWorld()->GetMapName()));
 		}
 	}
 

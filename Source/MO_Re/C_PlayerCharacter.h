@@ -152,7 +152,7 @@ protected:
 	bool bPaused;
 	FInventoryItem hoveredItem;
 	int currentHealth;
-	int maxHealth = 40;
+	int maxHealth = 100;
 	float timerSpeech = 0.0f;
 	float specialCooldown = 40.0f;
 
