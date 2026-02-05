@@ -2,14 +2,16 @@
 
 
 #include "C_InventoryComponent.h"
+#include "C_PlayerCharacter.h"
 
+AC_PlayerCharacter* PlayerCharacter;
 // Sets default values for this component's properties
 UC_InventoryComponent::UC_InventoryComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	PlayerCharacter = Cast<AC_PlayerCharacter>(GetOwner());
 	// ...
 }
 
@@ -30,6 +32,7 @@ void UC_InventoryComponent::AddItem(FInventoryItem item)
 		InventoryArray.Add(item);
 		InventoryArray[InventoryArray.Num() - 1].rowIndex = ((InventoryArray.Num() - 1) / 3);
 		InventoryArray[InventoryArray.Num() - 1].colIndex = ((InventoryArray.Num() - 1) % 3);
+		InventoryArray[InventoryArray.Num() - 1].bIsItemValid = true;
 	}
 }
 
@@ -52,6 +55,28 @@ TArray<FInventoryItem> UC_InventoryComponent::GetInventoryArray()
 }
 
 
+void UC_InventoryComponent::AddGun(FGun SourceGun)
+{
+	if (CurrentGun.bIsItemValid)
+	{
+		//Here spawn the gun in front of us
+	}
+	CurrentGun = SourceGun;
+	CurrentGun.bIsItemValid = true;
+	PlayerCharacter->ViewportGunMesh->SetSkeletalMesh(CurrentGun.ViewportMesh);
+}
+
+void UC_InventoryComponent::AddAmmo(int AmmoDelta)
+{
+	if (CurrentGun.bIsItemValid)
+	{
+		if ((CurrentGun.currentAmmo + AmmoDelta) <= CurrentGun.MaxAmmo)
+		{
+			CurrentGun.currentAmmo += AmmoDelta;
+		}
+	}
+}
+
 // Called when the game starts
 void UC_InventoryComponent::BeginPlay()
 {
@@ -69,4 +94,3 @@ void UC_InventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 	// ...
 }
-

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "C_InventoryComponent.h"
-
 #include "GameFramework/GameStateBase.h"
 #include "C_GaymState.generated.h"
 
@@ -12,6 +11,23 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryStateSwitched, bool, bS
 /**
  * 
  */
+
+ USTRUCT(BlueprintType)	
+ struct FEmailItem
+ {
+	GENERATED_USTRUCT_BODY();
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FString fromAd;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FString toAd;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FText Topic;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FText Body;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FDateTime SentDate;
+ };
+
 UCLASS()
 class MO_RE_API AC_GaymState : public AGameStateBase
 {
@@ -26,10 +42,11 @@ public:
 	int cacheItemID = -1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	UC_InventoryComponent* inventoryInstance;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
-	FGun equippedGun;
+
 	UFUNCTION(BlueprintCallable)
 	void SetInventoryOpen(bool bIsOpen);
+	UFUNCTION(BlueprintCallable)
+	AActor* GetPlayerPawn();
 	UFUNCTION(BlueprintCallable)
 	void SwitchInventoryOpen();
 	UFUNCTION(BlueprintCallable)
@@ -38,6 +55,6 @@ public:
 	void SetCacheItem(int IndexID, bool bSwitchToInventoryClosed);
 protected:
 	bool bIsInventoryOpen;
-	bool bIsPaused;
+	bool bIsPaused;	
 	void SwitchCursor(bool cursorState);
 };

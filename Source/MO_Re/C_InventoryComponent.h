@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Components/ActorComponent.h"
 #include "C_InventoryComponent.generated.h"
 
@@ -19,13 +20,15 @@ struct FInventoryItem : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UTexture2D* ItemImage;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	USkeletalMesh* ViewportMesh;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	int rowIndex;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	int colIndex;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TSubclassOf<AActor> ItemClass;
+	TSubclassOf<USceneComponent> ItemClass;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsInteractable;
 };
@@ -38,6 +41,8 @@ struct FGun : public FInventoryItem
 	int MaxAmmo;
 	UPROPERTY(BlueprintReadWrite, AdvancedDisplay)
 	int currentAmmo;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USoundBase* PewSound;
 
 };
 
@@ -60,11 +65,18 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 
 	TArray<FInventoryItem> InventoryArray;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	FGun CurrentGun;
+	UFUNCTION(BlueprintCallable)
+	void AddGun(FGun SourceGun);
+	UFUNCTION(BlueprintCallable)
+	void AddAmmo(int AmmoDelta);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	int maxItems = 9;
+	//AC_PlayerCharacter* player_C;
 
 public:	
 	// Called every frame

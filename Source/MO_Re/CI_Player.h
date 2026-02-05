@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "C_InventoryComponent.h"
+#include "C_GaymState.h"
 #include "UObject/Interface.h"
 #include "CI_Player.generated.h"
 
@@ -28,11 +29,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	void Punch(int hitPoints);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
-	void Speak(const FText& speech, float speechDuration);
+	void Chatter(const FString& speech, float speechDuration);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	FString GetThoughtString();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	AActor* GetLookedAtItem();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	void SetHoveredItem(FInventoryItem inputItem);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void InitLockPick(int32 difficultyLevel);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void SendMessage(const FEmailItem& inMessage);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	FInventoryItem GetHoveredItem();
 };

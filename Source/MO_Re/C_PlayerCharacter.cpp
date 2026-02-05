@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "C_UseableItem.h"
+#include "CI_Entity.h"
 
 // Sets default values
 AC_PlayerCharacter::AC_PlayerCharacter()
@@ -16,12 +17,24 @@ AC_PlayerCharacter::AC_PlayerCharacter()
 	MainCamera->SetRelativeLocation(FVector(0.0f, 0.0f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 	MainCamera->bUsePawnControlRotation = true;
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	FlashlightLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight Component"));
+	FlashlightLight->SetupAttachment(MainCamera);
+	FlashlightLight->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	FlashlightLight->SetIntensity(0.0f);
+	ViewportGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
+	ViewportGunMesh->SetupAttachment(MainCamera);
+	ViewportGunMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	ViewportGunMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+
 	crouchParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	crouchCollisionParams.AddIgnoredActor(this);
 	InventoryComponent = CreateDefaultSubobject<UC_InventoryComponent>(TEXT("Inventory"));
 	currentHealth = maxHealth;
-
+	LeAudioPlayer = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	LeAudioPlayer->SetupAttachment(RootComponent);
+	AIMarker= CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("AIMarker"));
+	LeAudioPlayer->bAutoActivate = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 
@@ -56,9 +69,57 @@ FInventoryItem AC_PlayerCharacter::GetHoveredItem_Implementation()
 
 
 
+void AC_PlayerCharacter::Chatter_Implementation(const FString &speech, float speechDuration)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Speaking...."));
+	FThoughtBubble = speech;
+	timerSpeech = speechDuration;
+}
+
+void AC_PlayerCharacter::InitLockPick_Implementation(int32 difficultyLevel)
+{
+	//asdf
+}
+
+void AC_PlayerCharacter::SendMessage_Implementation(const FEmailItem &inMessage)
+{
+	
+}
+
+FString AC_PlayerCharacter::GetThoughtString_Implementation()
+{
+    return FThoughtBubble;
+}
+
 bool AC_PlayerCharacter::GetInventoryOpen()
 {
 	return bIsInventoryOpen;
+}
+
+void AC_PlayerCharacter::Special()
+{
+	if(specialCooldown <=0.0f)
+	{
+	
+	}
+}
+
+void AC_PlayerCharacter::Holster()
+{
+	//I'm sick of wasting so much space of code soooooo I got insane
+	if(InventoryComponent->CurrentGun.bIsItemValid)
+	{
+		InventoryComponent->CurrentGun.bIsItemValid = false;
+		ViewportGunMesh->SetSkeletalMesh(nullptr);
+		bIsUsingCrafts = true;
+	}
+	else
+	{
+		InventoryComponent->CurrentGun.bIsItemValid = true;
+		ViewportGunMesh->SetSkeletalMesh(InventoryComponent->CurrentGun.ViewportMesh);
+		bIsUsingCrafts = false;
+	}
+	
 }
 
 void AC_PlayerCharacter::AttemptToJump()
@@ -77,7 +138,6 @@ void AC_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
-
 	GM_Instance = Cast<AC_Gamemode>(GetWorld()->GetAuthGameMode());
 	GS_Instance = Cast<AC_GaymState>(GetWorld()->GetGameState());
 	//------------INPUT SETUP -------------------------------------------------------------
@@ -93,19 +153,38 @@ void AC_PlayerCharacter::BeginPlay()
 		Player_Widget = CreateWidget(GetWorld(), Player_Widget_Class);
 		Player_Widget->AddToViewport();
 	}
+	ICI_Player::Execute_Chatter(this, "Ow, my head....",3.0f );
 	//PlayerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AC_PlayerCharacter::OnBeginOverlap);
 	//PlayerCapsule->OnComponentEndOverlap.AddDynamic(this, &AC_PlayerCharacter::OnEndOverlap);
 	//-----------------------------------------------------------------------------------
 }
 
+
 void AC_PlayerCharacter::Use()
 {
-	if(lookedAtActor != nullptr)
-	IC_UseableItem::Execute_UseItem(lookedAtActor, 0, nullptr);
+	if (bCanLook)
+	{
+		if (GS_Instance->cacheItemID > -1)
+		{
+			if (InventoryComponent->InventoryArray[GS_Instance->cacheItemID].bIsInteractable)
+			{
+				//ICI_Player::Execute_Chatter(this, "What shuddai do?",3.0f );
+
+			}
+		}
+		else
+			if (lookedAtActor != nullptr)
+				IC_UseableItem::Execute_UseItem(lookedAtActor, GS_Instance->cacheItemID, InventoryComponent);
+
+		GS_Instance->cacheItemID = -1;
+		GS_Instance->SetInventoryOpen(false);
+	}
+
+
 }
 void AC_PlayerCharacter::Flashlight()
 {
-	//
+	FlashlightLight->Intensity <= 0.0f ? FlashlightLight->SetIntensity(FlashlightMaxIntensity) : FlashlightLight->SetIntensity(0);
 }
 void AC_PlayerCharacter::Pause()
 {
@@ -163,13 +242,28 @@ void AC_PlayerCharacter::Quit()
 }
 void AC_PlayerCharacter::Shoot()
 {
-	FGun bufferGun = GS_Instance->equippedGun;
-	if (bufferGun.bIsItemValid)
+	if (InventoryComponent->CurrentGun.bIsItemValid && GS_Instance->cacheItemID<0 && lookedAtActor == nullptr && bCanLook && !bIsUsingCrafts)
 	{
-		if (bufferGun.currentAmmo > 0)
+
+		if (InventoryComponent->CurrentGun.currentAmmo > 0)
 		{
+			LeAudioPlayer->SetSound(InventoryComponent->CurrentGun.PewSound);
+			LeAudioPlayer->Play();
+			FHitResult ShootHit;
+			FVector S_StartLine = MainCamera->GetComponentLocation();
+			FVector S_ForwardLine = MainCamera->GetForwardVector();
+			FVector S_End = ((S_ForwardLine * 6000.0f) + S_StartLine);
+			FCollisionQueryParams CollisionParams;
+			CollisionParams.AddIgnoredActor(this);
+			if (GetWorld()->LineTraceSingleByChannel(ShootHit, S_StartLine, S_End, ECC_Camera, CollisionParams))
+			{
+				DrawDebugLine(GetWorld(), S_StartLine, ShootHit.Location, FColor::Green, false, 2.f, 0, 3.f);
+				AActor* victim = ShootHit.GetActor();
+				if (IsValid(victim) && victim->Implements<UCI_Entity>())
+					ICI_Entity::Execute_Punch(victim, 2);
+			}
 			//Shooting logic (not 4 now m8)
-			bufferGun.currentAmmo -= 1;
+			InventoryComponent->CurrentGun.currentAmmo -= 1;
 		}
 	}
 
@@ -222,6 +316,14 @@ void AC_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	LookAt();
+	TickSpeech();
+}
+void AC_PlayerCharacter::TickSpeech()
+{
+	if(timerSpeech>0.0f && FThoughtBubble != "")
+		timerSpeech -= GetWorld()->GetDeltaSeconds();
+	else
+		FThoughtBubble = "";
 }
 
 // Called to bind functionality to input
@@ -235,9 +337,12 @@ void AC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Look);
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Use);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Shoot);
 		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Inventory);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::AttemptToJump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AC_PlayerCharacter::AttemptToJump);
+		EnhancedInputComponent->BindAction(HolsterAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Holster);
+		EnhancedInputComponent->BindAction(FlashlightAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Flashlight);
+
 
 
 	}
