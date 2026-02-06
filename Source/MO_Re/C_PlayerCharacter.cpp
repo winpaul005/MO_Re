@@ -51,6 +51,7 @@ void AC_PlayerCharacter::Punch_Implementation(int hitPoints)
 	{
 		bOutOfOrder = true;
 		Holster();
+		AIMarker->UnregisterFromPerceptionSystem();
 	}
 }
 

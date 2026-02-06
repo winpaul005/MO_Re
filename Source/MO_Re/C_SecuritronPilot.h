@@ -35,6 +35,8 @@ class MO_RE_API AC_SecuritronPilot : public AAIController
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 		UAISenseConfig_Sight *SightComponent;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+		UAISenseConfig_Hearing *HearComponent;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 		TObjectPtr<UBehaviorTreeComponent> BehaviorTreeComponent{ nullptr };
 
 		UFUNCTION(Category = "AI")
