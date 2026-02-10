@@ -11,10 +11,12 @@ AC_SecuritronPilot::AC_SecuritronPilot(FObjectInitializer const& ObjectInitializ
 	SenseComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("SenseComponent"));
 	SightComponent = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightComponent"));
 	HearComponent = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearComponent"));
-	SightComponent->SightRadius = 800.0f;
-	SightComponent->LoseSightRadius = 820.0f;
+	SightComponent->SightRadius = 3000.0f;
+	SightComponent->LoseSightRadius = 3200.0f;
 	SightComponent->PeripheralVisionAngleDegrees = 360.0f;
 	SightComponent->DetectionByAffiliation.bDetectEnemies=true;
+	SightComponent->DetectionByAffiliation.bDetectNeutrals=true;
+	SightComponent->DetectionByAffiliation.bDetectFriendlies=true;
 	SenseComponent->ConfigureSense(*HearComponent);
 	SenseComponent->ConfigureSense(*SightComponent);
 	SenseComponent->SetDominantSense(SightComponent->GetSenseImplementation());
