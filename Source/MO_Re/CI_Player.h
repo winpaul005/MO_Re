@@ -35,6 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	AActor* GetLookedAtItem();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	bool GetIsWeaponHolstred();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	void SetHoveredItem(FInventoryItem inputItem);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	void InitLockPick(int32 difficultyLevel);

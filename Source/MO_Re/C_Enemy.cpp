@@ -39,7 +39,11 @@ void AC_Enemy::Punch_Implementation(int hitPoints)
 
 	}
 }
-UBehaviorTree* AC_Enemy::GetBehaviourTree() const
+void AC_Enemy::ScenarioStartle_Implementation(const TArray<AActor *> &victims)
+{
+	Cast<AC_SecuritronPilot>(GetController())->StartleTo(victims);
+}
+UBehaviorTree *AC_Enemy::GetBehaviourTree() const
 {
 	return Tree;
 }

@@ -23,6 +23,7 @@ public:
 	bool bOutOfOrder;
 	virtual int GetHealth_Implementation() override;
 	virtual void Punch_Implementation(int hitPoints) override;
+	virtual void ScenarioStartle_Implementation(const TArray<AActor*>& victims) override;
 	UBehaviorTree* GetBehaviourTree() const;
 	UBlackboardComponent* BlackboardComponent;
 	UFUNCTION(BlueprintCallable)

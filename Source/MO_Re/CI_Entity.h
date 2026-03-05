@@ -25,5 +25,7 @@ public:
 	int GetHealth();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
 	void Punch(int hitPoints);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Basic")
+	void ScenarioStartle(const TArray<AActor*>& victims);
 
 };

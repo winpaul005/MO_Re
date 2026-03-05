@@ -32,6 +32,12 @@ struct FInventoryItem : public FTableRowBase
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool bIsInteractable;
 };
+UENUM(BlueprintType)
+enum EShootingPattern : uint8
+{
+	Single,
+	FullAuto
+};
 
 USTRUCT(BlueprintType)
 struct FGun : public FInventoryItem
@@ -43,7 +49,14 @@ struct FGun : public FInventoryItem
 	int currentAmmo;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	USoundBase* PewSound;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TEnumAsByte<EShootingPattern> shootPattern;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsTooHeavy;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float shootCooldown;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float shootWarmup;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

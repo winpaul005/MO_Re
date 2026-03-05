@@ -25,6 +25,7 @@
 //Using this comment section to remind you that every AI 'artist' should
 //eat 1.678 tones of battery acid the moment the game compiles 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShot);
 
 
 UCLASS()
@@ -73,7 +74,8 @@ public:
 
 	AC_GaymState* GS_Instance;
 	AC_Gamemode* GM_Instance;
-	
+	UPROPERTY(BlueprintAssignable)
+	FOnShot ShotEvent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* DefaultMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -109,6 +111,7 @@ public:
 	virtual void Chatter_Implementation(const FString& speech, float speechDuration);
 	virtual void InitLockPick_Implementation(int32 difficultyLevel);
 	virtual void SendMessage_Implementation(const FEmailItem& inMessage);
+	virtual bool GetIsWeaponHolstred_Implementation() override;
 
 
 	virtual FString GetThoughtString_Implementation();
@@ -135,14 +138,18 @@ protected:
 	void Discard();
 	void Inventory();
 	void Quit();
+	void ShootStart();
 	void Shoot();
+	void UnShoot();
 	void Pause();
 	void LookAt();
 	void TickSpeech();
 	void Grab();
 	void Special();
 	void Holster();
+	void Blast();
 	void AttemptToJump();
+	void TickCooldowns(float _DeltaTime);
 	FHitResult crouchHit;
 	FCollisionObjectQueryParams crouchParams;
 	FCollisionQueryParams crouchCollisionParams;
@@ -155,6 +162,9 @@ protected:
 	int maxHealth = 100;
 	float timerSpeech = 0.0f;
 	float specialCooldown = 40.0f;
+	float warmupTimer = 0.0f;
+	float cooldownTimer= 0.0f;
+	bool isShootingNow = false;
 
 public:	
 	// Called every frame

@@ -48,7 +48,7 @@ void AC_SecuritronPilot::OnPossess(APawn* InPawn)
 void AC_SecuritronPilot::Startle(const TArray<AActor*>& potentialThreats)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Detected %d actors!"),potentialThreats.Num());
-	if(potentialThreats.Num()>0 && potentialThreats.Find(GetWorld()->GetFirstPlayerController()->GetPawn())==0)
+	if(potentialThreats.Num()>0 && potentialThreats.Find(GetWorld()->GetFirstPlayerController()->GetPawn())>=0)
 	{
 		victimPawn->BlackboardComponent->SetValueAsVector(TEXT("TargetVector"), potentialThreats[0]->GetActorLocation());
 		victimPawn->BlackboardComponent->SetValueAsBool(TEXT("IsStartled"), true);
@@ -60,6 +60,12 @@ void AC_SecuritronPilot::Startle(const TArray<AActor*>& potentialThreats)
 		victimPawn->BlackboardComponent->SetValueAsBool(TEXT("IsStartled"), false);
 	}
 
+}
+
+void AC_SecuritronPilot::StartleTo(const TArray<AActor*>& victims)
+{
+
+	Startle(victims);
 }
 
 void AC_SecuritronPilot::Pursue(AActor *Actor, FAIStimulus Stimulus)

@@ -41,6 +41,8 @@ class MO_RE_API AC_SecuritronPilot : public AAIController
 
 		UFUNCTION(Category = "AI")
 		void Startle(const TArray<AActor*>& potentialThreats);
+		UFUNCTION(BlueprintCallable)
+		void StartleTo(const TArray<AActor*>& victims);
 		UFUNCTION(Category = "AI")
 		void Pursue(AActor* Actor, FAIStimulus Stimulus);
 	private:

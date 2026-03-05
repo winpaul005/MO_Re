@@ -89,6 +89,11 @@ void AC_PlayerCharacter::SendMessage_Implementation(const FEmailItem &inMessage)
 	
 }
 
+bool AC_PlayerCharacter::GetIsWeaponHolstred_Implementation()
+{
+    return bIsUsingCrafts;
+}
+
 FString AC_PlayerCharacter::GetThoughtString_Implementation()
 {
     return FThoughtBubble;
@@ -110,7 +115,7 @@ void AC_PlayerCharacter::Special()
 void AC_PlayerCharacter::Holster()
 {
 	//I'm sick of wasting so much space of code soooooo I got insane
-	if(InventoryComponent->CurrentGun.bIsItemValid ||bOutOfOrder)
+	if((InventoryComponent->CurrentGun.bIsItemValid ||bOutOfOrder)&&(!InventoryComponent->CurrentGun.bIsTooHeavy))
 	{
 		InventoryComponent->CurrentGun.bIsItemValid = false;
 		ViewportGunMesh->SetSkeletalMesh(nullptr);
@@ -124,19 +129,15 @@ void AC_PlayerCharacter::Holster()
 			ViewportGunMesh->SetSkeletalMesh(InventoryComponent->CurrentGun.ViewportMesh);
 			bIsUsingCrafts = false;
 		}
-
 	}
-	
 }
 
 void AC_PlayerCharacter::AttemptToJump()
 {
 	if(bCanLook)
-
 	{
 		bPressedJump = true;
 		JumpKeyHoldTime = 0.0f;
-
 	}
 }
 
@@ -251,13 +252,13 @@ void AC_PlayerCharacter::Quit()
 		FGenericPlatformMisc::RequestExit(false);
 	}
 }
-void AC_PlayerCharacter::Shoot()
+void AC_PlayerCharacter::Blast()
 {
 	if (InventoryComponent->CurrentGun.bIsItemValid && GS_Instance->cacheItemID<0 && lookedAtActor == nullptr && bCanLook && !bIsUsingCrafts &&!bOutOfOrder)
 	{
-
 		if (InventoryComponent->CurrentGun.currentAmmo > 0)
 		{
+			ShotEvent.Broadcast();
 			LeAudioPlayer->SetSound(InventoryComponent->CurrentGun.PewSound);
 			LeAudioPlayer->Play();
 			FHitResult ShootHit;
@@ -277,6 +278,21 @@ void AC_PlayerCharacter::Shoot()
 			InventoryComponent->CurrentGun.currentAmmo -= 1;
 		}
 	}
+}
+void AC_PlayerCharacter::ShootStart()
+{
+	if (InventoryComponent->CurrentGun.bIsItemValid && GS_Instance->cacheItemID<0 && lookedAtActor == nullptr && bCanLook && !bIsUsingCrafts &&!bOutOfOrder)
+	{
+		switch(InventoryComponent->CurrentGun.shootPattern)
+		{
+			case(EShootingPattern::Single):
+				Blast();
+				break;
+			case(EShootingPattern::FullAuto):
+				warmupTimer = InventoryComponent->CurrentGun.shootWarmup;
+				isShootingNow = true;
+		}
+	}
 	else
 	{
 		if(bOutOfOrder)
@@ -284,9 +300,26 @@ void AC_PlayerCharacter::Shoot()
 			UGameplayStatics::OpenLevel(GetWorld(), FName(GetWorld()->GetMapName()));
 		}
 	}
+}
 
-
-	
+void AC_PlayerCharacter::Shoot()
+{
+	if(isShootingNow)
+	{
+		if(warmupTimer<=0.0f)
+		{
+			if(cooldownTimer<=0.0f)
+			{
+				Blast();
+				cooldownTimer = InventoryComponent->CurrentGun.shootCooldown;
+			}
+		}
+	}
+}
+void AC_PlayerCharacter::UnShoot()
+{
+	isShootingNow = false;
+	warmupTimer = 0.0f;
 }
 void AC_PlayerCharacter::Move(const FInputActionValue& Value)
 {
@@ -328,6 +361,17 @@ void AC_PlayerCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.X * FLookFactor);
 	}
 }
+void AC_PlayerCharacter::TickCooldowns(float _DeltaTime)
+{
+	if(warmupTimer >0.0f)
+	{
+		warmupTimer -= _DeltaTime;
+	}
+	if(cooldownTimer > 0.0f)
+	{
+		cooldownTimer -= _DeltaTime;
+	}
+}
 
 // Called every frame
 void AC_PlayerCharacter::Tick(float DeltaTime)
@@ -335,6 +379,7 @@ void AC_PlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	LookAt();
 	TickSpeech();
+	TickCooldowns(DeltaTime);
 }
 void AC_PlayerCharacter::TickSpeech()
 {
@@ -355,7 +400,9 @@ void AC_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Look);
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Use);
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::ShootStart);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AC_PlayerCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AC_PlayerCharacter::UnShoot);
 		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Inventory);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::AttemptToJump);
 		EnhancedInputComponent->BindAction(HolsterAction, ETriggerEvent::Started, this, &AC_PlayerCharacter::Holster);
